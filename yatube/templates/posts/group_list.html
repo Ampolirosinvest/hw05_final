@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load thumbnail %}
+{% block title %} {{ title }} {% endblock %}
+{% block content %}
+
+
+  <body>
+    <main>
+      <!-- класс py-5 создает отступы сверху и снизу блока -->
+      <div class="container py-5">
+        <h1>{{ group.title }}</h1>
+        <p>
+          {{ group.description }}
+        </p>
+        {% for post_wich_group in page_obj %}
+        <article>
+          <ul>
+            <li>
+              Автор: {{ post_wich_group.author.get_full_name }}
+            </li>
+            <li>
+              Дата публикации: {{ post_wich_group.pub_date|date:"d E Y" }}
+            </li>
+          </ul>  
+            {% thumbnail post_wich_group.image "400x300" crop="center" upscale=True as im %}
+              <img class="card-img my-2" src="{{ im.url }}">
+            {% endthumbnail %} 
+            <p>{{ post_wich_group.text }}</p>      
+          {% if not forloop.last %}<hr>{% endif %}  
+        {% endfor %}
+        {% include 'posts/includes/paginator.html' %} 
+        </article> 
+      </div>  
+    </main>   
+  </body>
+{% endblock %} 
