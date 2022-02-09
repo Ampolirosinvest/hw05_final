@@ -33,7 +33,7 @@ urlpatterns = [
 # Подвяжем хендлер к view функции page_not_found в приложении core
 handler404 = 'core.views.page_not_found'
 handler403 = 'core.views.page_forbidden'
-handler500 = 'core.views.page_internal_server_error'  # почему-то не работает
+handler500 = 'core.views.page_internal_server_error'
 
 if settings.DEBUG:
     urlpatterns += static(
