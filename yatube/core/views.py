@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from http.client import INTERNAL_SERVER_ERROR, FORBIDDEN, NOT_FOUND
+from http.client import INTERNAL_SERVER_ERROR, FORBIDDEN
 
 
 def page_not_found(request, exception):
