@@ -1,9 +1,7 @@
-from http.client import OK, FOUND
+from http.client import OK, FOUND, NOT_FOUND
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client
 from posts.models import Post, Group
-from django.test import SimpleTestCase, override_settings
-from posts.views import response_error_handler
 
 User = get_user_model()
 
@@ -63,6 +61,11 @@ class StaticURLTestsGuest(TestCase):
                 response = self.guest_client.get(address)
                 self.assertEqual(response.status_code, code)
 
+    def ttest_unexisting_page(self):
+        """Страница unexisting_page проверка на ее отсутсвие 404(NOT_FOUND)"""
+        response = self.guest_client.get('/unexisting_page/')
+        self.assertEqual(response.status_code, NOT_FOUND)
+
 
 class StaticURLTestsAuthorized(TestCase):
     @classmethod
@@ -100,15 +103,3 @@ class StaticURLTestsAuthorized(TestCase):
                 response = self.authorized_client.get(address)
                 self.assertEqual(response.status_code, OK)
                 self.assertTemplateUsed(response, template)
-
-
-handler404 = response_error_handler
-
-
-@override_settings(ROOT_URLCONF=__name__)
-class CustomErrorHandlerTests(SimpleTestCase):
-
-    def test_unexisting_page(self):
-        """Страница unexisting_page проверка на ее отсутсвие 404(NOT_FOUND)"""
-        response = self.client.get('unexisting_page/')
-        self.assertContains(response, 'Error handler content', status_code=404)

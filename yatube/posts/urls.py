@@ -62,5 +62,5 @@ urlpatterns = [
         views.profile_unfollow,
         name='profile_unfollow'
     ),
-    path('unexisting_page/', views.page_not_found1),
+    # path('unexisting_page/', views.page_not_found1),
 ]

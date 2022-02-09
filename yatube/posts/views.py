@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404, render
 from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseNotFound, Http404
+# from django.http import HttpResponseNotFound, Http404
 # from django.views.decorators.cache import cache_page
 from .models import Post, Group, User, Follow
 from .forms import PostForm, CommentForm
@@ -193,13 +193,3 @@ def profile_unfollow(request, username):
         user=request.user, author=author)
     following.delete()
     return redirect('posts:profile', username=username)
-
-
-# Это для проверки 404 Not_found
-def response_error_handler(request, exception=None):
-    return HttpResponseNotFound('Error handler content', status=404)
-
-
-# Это для проверки 404 Not_found тоже
-def page_not_found1(request):
-    raise Http404("Страница недоступна")
