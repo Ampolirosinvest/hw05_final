@@ -61,9 +61,9 @@ class StaticURLTestsGuest(TestCase):
                 response = self.guest_client.get(address)
                 self.assertEqual(response.status_code, code)
 
-    def ttest_unexisting_page(self):
+    def test_unexisting_page(self):
         """Страница unexisting_page проверка на ее отсутсвие 404(NOT_FOUND)"""
-        response = self.guest_client.get('/unexisting_page/')
+        response = self.guest_client.get('unexisting_page/')
         self.assertEqual(response.status_code, NOT_FOUND)
 
 

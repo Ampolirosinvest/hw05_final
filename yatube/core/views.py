@@ -10,7 +10,7 @@ def page_not_found(request, exception):
         request,
         template,
         {'path': request.path},
-        NOT_FOUND
+        status=404
     )
 
 
