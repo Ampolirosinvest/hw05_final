@@ -152,3 +152,5 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
     }
 }
+# настройка паджинатора, сколько постов выводить на страницу
+PER_PAGE = 10

@@ -1,19 +1,20 @@
-from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, render
-from .models import Post, Group, User, Follow
 from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseNotFound, Http404
+# from django.views.decorators.cache import cache_page
+from .models import Post, Group, User, Follow
 from .forms import PostForm, CommentForm
+from .paginator import paginator_page
 
 
+# @cache_page(20 * 1) #pytest ругается не могу убрать
 def index(request):
     # page: int = 10
     template = 'posts/index.html'
     title = 'Yatube:  Лев Толстой и все все все'
     posts = Post.objects.select_related('group').all()  # [:page]
-    paginator = Paginator(posts, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj = paginator_page(request, posts)
     context = {
         'posts': posts,
         'title': title,
@@ -28,9 +29,7 @@ def group_posts(request, slug):
     posts = group.posts.all()  # [:SHOW_POST]
     template = 'posts/group_list.html'
     title = 'Yatube-сообщества'
-    paginator = Paginator(posts, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj = paginator_page(request, posts)
     context = {
         'group': group,
         'posts': posts,
@@ -57,20 +56,17 @@ def profile(request, username):
     # Здесь код запроса к модели и создание словаря контекста
     title = 'Профайл пользователя ' + username
     template = 'posts/profile.html'
-    user = get_object_or_404(User, username=username)
-    posts = user.posts.all()
-    posts_count = posts.count()
     author = get_object_or_404(User, username=username)
-    following = request.user.is_authenticated and \
-        Follow.objects.filter(
+    posts = author.posts.all()
+    posts_count = posts.count()
+    following = request.user.is_authenticated and (
+        author != request.user and Follow.objects.filter(
             user=request.user,
             author=author
-        ).exists()
-    paginator = Paginator(posts, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+        ).exists())
+    page_obj = paginator_page(request, posts)
     context = {
-        'author': user,
+        'author': author,
         'posts_count': posts_count,
         'posts': posts,
         'title': title,
@@ -87,20 +83,19 @@ def post_detail(request, post_id):
     # от значения его первичного ключа, или выбрасывает исключение Http404,
     # если данной записи не существует.
     # В нашем случае модель Post возвращает конкрутную строку из БД по id поста
-    post_num = Post.objects.select_related('author').filter(author=post.author)
+    post_num = post.author.posts.all()
     count_post = post_num.count()
     template = 'posts/post_detail.html'
-    title = f'Пост {post_id} {post}'
     form = CommentForm()
     # нужно добавить комментарий, относящийся к конкретному посту
     comments = post.comments.all()
     context = {
-        'title': title,
         'post': post,
         'post_list': post_num,
         'count_post': count_post,
         'form': form,
-        'comments': comments
+        'comments': comments,
+        'post_id': post_id
     }
     return render(request, template, context)
 
@@ -108,7 +103,10 @@ def post_detail(request, post_id):
 @login_required
 def post_create(request):
     tamplate = 'posts/create_post.html'
-    form = PostForm(request.POST or None, files=request.FILES or None)
+    form = PostForm(
+        request.POST or None,
+        files=request.FILES or None
+    )
     if form.is_valid():
         post = form.save(commit=False)
         post.author = request.user
@@ -121,8 +119,11 @@ def post_create(request):
 def post_edit(request, post_id):
     tamplate = 'posts/create_post.html'
     post = get_object_or_404(Post, pk=post_id)
-    form = PostForm(request.POST or None,
-                    files=request.FILES or None, instance=post)
+    form = PostForm(
+        request.POST or None,
+        files=request.FILES or None,
+        instance=post
+    )
     if form.is_valid():
         post = form.save(commit=False)
         post.author = request.user
@@ -161,12 +162,9 @@ def follow_index(request):
     title = 'Посты от подписанных пользователей'
     posts = Post.objects.select_related('author').filter(
         author__following__user=request.user)
-    paginator = Paginator(posts, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj = paginator_page(request, posts)
     context = {
         'page_obj': page_obj,
-        'paginator': paginator,
         'title': title,
     }
     return render(request, template, context)
@@ -175,13 +173,11 @@ def follow_index(request):
 @login_required
 def profile_follow(request, username):
     author = get_object_or_404(User, username=username)
-    if author == request.user:
-        return redirect('posts:profile', username=username)
     follower = Follow.objects.filter(
         user=request.user,
         author=author
     ).exists()
-    if follower is True:
+    if follower is True or author == request.user:
         return redirect('posts:profile', username=username)
     Follow.objects.create(user=request.user, author=author)
     return redirect('posts:profile', username=username)
@@ -193,6 +189,17 @@ def profile_unfollow(request, username):
     author = get_object_or_404(User, username=username)
     if author == request.user:
         return redirect('posts:profile', username=username)
-    following = get_object_or_404(Follow, user=request.user, author=author)
+    following = Follow.objects.select_related('following').filter(
+        user=request.user, author=author)
     following.delete()
     return redirect('posts:profile', username=username)
+
+
+# Это для проверки 404 Not_found
+def response_error_handler(request, exception=None):
+    return HttpResponseNotFound('Error handler content', status=404)
+
+
+# Это для проверки 404 Not_found тоже
+def page_not_found(request):
+    raise Http404("Страница недоступна")

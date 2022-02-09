@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.db.models.constraints import UniqueConstraint
 
 User = get_user_model()
 
@@ -34,9 +35,9 @@ class Post(models.Model):
         upload_to='posts/',
         blank=True
     )
+
     # Аргумент upload_to указывает директорию,
     # в которую будут загружаться пользовательские файлы.
-
     class Meta:
         ordering = ['-pub_date']
 
@@ -76,3 +77,6 @@ class Follow(models.Model):
         on_delete=models.CASCADE,
         related_name='following'
     )
+
+    class Meta:
+        UniqueConstraint(fields=['user', 'author'], name='unique_follower')

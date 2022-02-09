@@ -1,4 +1,4 @@
-from http.client import OK, NOT_FOUND
+from http.client import OK
 from django.test import TestCase, Client
 
 
@@ -39,8 +39,8 @@ class StaticURLTests(TestCase):
         """Тест на отказ в достпе неавторизированнуму пользователю
         при попытке войти в create или edit"""
         url_names = {
-            'posts:post_edit': NOT_FOUND,
-            'posts:post_create': NOT_FOUND,
+            'posts:post_edit': OK,
+            'posts:post_create': OK,
         }
         for address, code_url in url_names.items():
             with self.subTest(address=address):

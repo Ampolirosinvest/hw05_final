@@ -153,3 +153,5 @@ coverage.xml
 
 # папка для картинок и видео
 media/
+# пример для теста
+test_primer.py
