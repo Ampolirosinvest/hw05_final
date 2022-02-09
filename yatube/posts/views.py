@@ -201,5 +201,5 @@ def response_error_handler(request, exception=None):
 
 
 # Это для проверки 404 Not_found тоже
-def page_not_found(request):
+def page_not_found1(request):
     raise Http404("Страница недоступна")
