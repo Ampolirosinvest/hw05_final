@@ -4,8 +4,6 @@
 {% block title %} {{ title }} {% endblock %}
 {% block content %}
 {% include 'posts/includes/switcher.html' %}
-{% load cache %} 
-{% cache 20 index_page page_obj.number%} 
   <body>
     <main> 
       <!-- класс py-5 создает отступы сверху и снизу блока -->
@@ -35,5 +33,4 @@
       </div>  
     </main>        
   </body>
-  {% endcache %} 
 {% endblock %}

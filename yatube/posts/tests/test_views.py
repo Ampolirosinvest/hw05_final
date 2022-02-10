@@ -64,6 +64,7 @@ class PostPagesTests(TestCase):
             self.post_create_revers: self.post_edit_create_template,
         }
         # Проверяем, что при обращении к name вызывается соответ. HTML-шаблон
+        cache.clear()
         for reverse_name, template in templates_pages_names.items():
             with self.subTest(reverse_name=reverse_name):
                 response = self.authorized_client.get(reverse_name)
@@ -101,6 +102,7 @@ class PostPagesTests(TestCase):
 
     def test_index_page_show_correct_context(self):
         """Шаблон index сформирован с правильным контекстом."""
+        cache.clear()
         response = self.authorized_client.get(self.index_revers)
         first_object = response.context['page_obj'][0]
         post_text_one = first_object.text
@@ -129,6 +131,7 @@ class PostPagesTests(TestCase):
     # Проверка паджинатора страниц index, group и profile
     def test_one_two_page_contains_ten_records_all(self):
         """Проверка паджинатора страницы index 1 и 2"""
+        cache.clear()
         paginator = {
             self.client.get(self.index_revers):
                 self.client.get(self.index_revers + '?page=2'),
@@ -157,6 +160,7 @@ class PostPagesTests(TestCase):
             self.group_revers,
             self.profile_revers,
         ]
+        cache.clear()
         for url in urls:
             with self.subTest(url=url):
                 response = self.authorized_client.get(url)

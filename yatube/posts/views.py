@@ -1,19 +1,17 @@
 from django.shortcuts import get_object_or_404, render
 from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
-# from django.http import HttpResponseNotFound, Http404
-# from django.views.decorators.cache import cache_page
+from django.views.decorators.cache import cache_page
 from .models import Post, Group, User, Follow
 from .forms import PostForm, CommentForm
 from .paginator import paginator_page
 
 
-# @cache_page(20 * 1) #pytest ругается не могу убрать
+@cache_page(20 * 1)
 def index(request):
-    # page: int = 10
     template = 'posts/index.html'
     title = 'Yatube:  Лев Толстой и все все все'
-    posts = Post.objects.select_related('group').all()  # [:page]
+    posts = Post.objects.select_related('group').all()
     page_obj = paginator_page(request, posts)
     context = {
         'posts': posts,
@@ -24,9 +22,8 @@ def index(request):
 
 
 def group_posts(request, slug):
-    # SHOW_POST: int = 10
     group = get_object_or_404(Group, slug=slug)
-    posts = group.posts.all()  # [:SHOW_POST]
+    posts = group.posts.all()
     template = 'posts/group_list.html'
     title = 'Yatube-сообщества'
     page_obj = paginator_page(request, posts)
@@ -54,7 +51,6 @@ def group_posts(request, slug):
 
 def profile(request, username):
     # Здесь код запроса к модели и создание словаря контекста
-    title = 'Профайл пользователя ' + username
     template = 'posts/profile.html'
     author = get_object_or_404(User, username=username)
     posts = author.posts.all()
@@ -69,7 +65,6 @@ def profile(request, username):
         'author': author,
         'posts_count': posts_count,
         'posts': posts,
-        'title': title,
         'page_obj': page_obj,
         'following': following,
     }
@@ -159,13 +154,11 @@ def add_comment(request, post_id):
 def follow_index(request):
     # информация о текущем пользователе доступна в переменной request.user
     template = 'posts/follow.html'
-    title = 'Посты от подписанных пользователей'
     posts = Post.objects.select_related('author').filter(
         author__following__user=request.user)
     page_obj = paginator_page(request, posts)
     context = {
         'page_obj': page_obj,
-        'title': title,
     }
     return render(request, template, context)
 
